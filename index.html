@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mumbai Air — Why the City Can't Breathe</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #060a12;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --border-bright: rgba(255,255,255,0.15);
+    --text: #e8edf5;
+    --text-dim: rgba(232,237,245,0.45);
+    --text-muted: rgba(232,237,245,0.25);
+    --accent: #4fd1c5;
+    --accent-dim: rgba(79,209,197,0.15);
+    --warn: #f6ad55;
+    --warn-dim: rgba(246,173,85,0.15);
+    --danger: #fc8181;
+    --danger-dim: rgba(252,129,129,0.12);
+    --good: #68d391;
+    --good-dim: rgba(104,211,145,0.12);
+    --r: 20px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* Ambient glow blobs */
+  .blob {
+    position: fixed; border-radius: 50%; filter: blur(80px);
+    pointer-events: none; z-index: 0; opacity: 0;
+    transition: opacity 2s ease, background 2s ease;
+  }
+  .blob-1 { width: 500px; height: 500px; top: -100px; left: -100px; background: radial-gradient(circle, rgba(79,209,197,0.08), transparent 70%); }
+  .blob-2 { width: 600px; height: 600px; bottom: -150px; right: -100px; background: radial-gradient(circle, rgba(246,173,85,0.06), transparent 70%); }
+  .blob-3 { width: 400px; height: 400px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle, rgba(252,129,129,0.05), transparent 70%); }
+
+  /* LAYOUT */
+  .shell {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    grid-template-rows: 100vh;
+    height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 0; gap: 8px;
+    border-right: 1px solid var(--border);
+    background: rgba(6,10,18,0.6);
+    backdrop-filter: blur(20px);
+  }
+  .sidebar-logo {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #38b2ac);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 16px;
+    box-shadow: 0 0 20px rgba(79,209,197,0.3);
+  }
+  .nav-item {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 15px;
+    color: var(--text-dim);
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-item:hover { background: var(--surface-hover); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .sidebar-bottom { margin-top: auto; }
+
+  /* MAIN AREA */
+  .main {
+    display: grid;
+    grid-template-columns: 280px 1fr 240px;
+    grid-template-rows: 1fr;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* LEFT PANEL */
+  .left-panel {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 20px 16px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .left-panel::-webkit-scrollbar { display: none; }
+
+  /* CENTER PANEL */
+  .center-panel {
+    display: flex; flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 20px 16px;
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .right-panel::-webkit-scrollbar { display: none; }
+
+  /* CARD COMPONENT */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px 18px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .card:hover { border-color: var(--border-bright); }
+
+  .card-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin-bottom: 8px; font-family: 'DM Mono', monospace;
+  }
+
+  /* AQI HERO CARD */
+  .aqi-card {
+    border-radius: var(--r);
+    padding: 20px;
+    position: relative; overflow: hidden;
+    transition: background 1.5s ease, border-color 1.5s ease;
+  }
+  .aqi-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.04), transparent 70%);
+    pointer-events: none;
+  }
+  .aqi-number {
+    font-size: 64px; font-weight: 800; line-height: 1;
+    letter-spacing: -2px; margin-bottom: 4px;
+    transition: color 1.5s ease;
+  }
+  .aqi-status {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; opacity: 0.7;
+    transition: color 1.5s ease;
+    margin-bottom: 12px;
+  }
+  .aqi-insight {
+    font-size: 11px; color: var(--text-dim);
+    font-family: 'DM Mono', monospace; font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* CONTROL CARDS */
+  .control-label {
+    font-size: 11px; color: var(--text-dim);
+    font-family: 'DM Mono', monospace; margin-bottom: 12px;
+  }
+  .btn-group {
+    display: flex; gap: 6px;
+  }
+  .btn {
+    flex: 1; padding: 8px 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-dim); cursor: pointer;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    font-weight: 500; letter-spacing: 0.06em;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+  .btn.active {
+    background: var(--accent-dim);
+    border-color: rgba(79,209,197,0.3);
+    color: var(--accent);
+  }
+  .btn.active-warn {
+    background: var(--warn-dim);
+    border-color: rgba(246,173,85,0.3);
+    color: var(--warn);
+  }
+  .btn.active-danger {
+    background: var(--danger-dim);
+    border-color: rgba(252,129,129,0.3);
+    color: var(--danger);
+  }
+
+  /* TOGGLE */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+  .toggle-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .toggle-name { font-size: 12px; font-weight: 600; }
+  .toggle-desc { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .toggle {
+    width: 44px; height: 24px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    cursor: pointer; position: relative;
+    border: 1px solid var(--border);
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--text-dim); top: 2px; left: 3px;
+    transition: transform 0.3s, background 0.3s;
+  }
+  .toggle.on { background: rgba(79,209,197,0.25); border-color: rgba(79,209,197,0.4); }
+  .toggle.on::after { transform: translateX(20px); background: var(--accent); }
+  .toggle.on-warn { background: var(--warn-dim); border-color: rgba(246,173,85,0.4); }
+  .toggle.on-warn::after { transform: translateX(20px); background: var(--warn); }
+
+  /* MINI STATS */
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .stat-big { font-size: 28px; font-weight: 800; line-height: 1; }
+  .stat-unit { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .stat-change { font-size: 10px; font-family: 'DM Mono', monospace; }
+  .stat-change.up { color: var(--danger); }
+  .stat-change.down { color: var(--good); }
+  .mini-bar-wrap { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .mini-bar { height: 100%; border-radius: 2px; transition: width 1.5s ease; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    padding: 0 2px; margin: 4px 0 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* CANVAS AREA */
+  #canvas-container {
+    flex: 1; position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 60% 40%, rgba(79,209,197,0.03) 0%, transparent 60%);
+  }
+  canvas { display: block; }
+
+  /* CANVAS OVERLAY LABELS */
+  .map-label {
+    position: absolute; font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    color: rgba(232,237,245,0.25); text-transform: uppercase;
+    pointer-events: none;
+  }
+  #label-city { top: 16px; left: 20px; }
+  #label-sea { bottom: 20px; right: 20px; }
+
+  /* HEADER BAR */
+  .header-bar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+  .header-sub { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .header-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-dim); }
+
+  /* TREND SPARKLINE */
+  .spark-wrap { height: 40px; position: relative; margin-top: 8px; }
+  svg.spark { width: 100%; height: 100%; overflow: visible; }
+
+  /* WIND DIRECTION INDICATOR */
+  .wind-compass {
+    width: 52px; height: 52px; border-radius: 50%;
+    border: 1px solid var(--border);
+    position: relative; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.03);
+  }
+  .wind-arrow {
+    width: 2px; height: 20px; background: var(--accent);
+    transform-origin: bottom center;
+    position: absolute; bottom: 50%;
+    border-radius: 1px;
+    transition: transform 1s ease;
+  }
+  .wind-compass-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent); z-index: 1;
+  }
+
+  /* SOURCE TAGS */
+  .source-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .tag {
+    font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.06em;
+    padding: 3px 7px; border-radius: 6px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* LOADING SCREEN */
+  #loader {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    transition: opacity 0.8s ease;
+  }
+  .loader-logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .loader-logo span { color: var(--accent); }
+  .loader-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.2em; }
+  .loader-bar { width: 120px; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+  .loader-fill { height: 100%; width: 0%; background: var(--accent); animation: load 1.4s ease forwards; }
+  @keyframes load { to { width: 100%; } }
+
+  /* TOOLTIP */
+  .tooltip {
+    position: absolute; background: rgba(10,14,22,0.92); border: 1px solid var(--border-bright);
+    border-radius: 10px; padding: 8px 12px;
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text);
+    pointer-events: none; white-space: nowrap;
+    backdrop-filter: blur(10px);
+    opacity: 0; transition: opacity 0.2s;
+    z-index: 50;
+  }
+
+  /* SCROLLBAR */
+  * { scrollbar-width: none; }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">Mumbai <span>Air</span></div>
+  <div class="loader-sub">Loading air system data</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- AMBIENT BLOBS -->
+<div class="blob blob-1" id="blob1"></div>
+<div class="blob blob-2" id="blob2"></div>
+<div class="blob blob-3" id="blob3"></div>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">🌬</div>
+    <div class="nav-item active" title="Dashboard">◉</div>
+    <div class="nav-item" title="Wind">〜</div>
+    <div class="nav-item" title="Sources">⊕</div>
+    <div class="nav-item" title="Insights">≡</div>
+    <div class="sidebar-bottom">
+      <div class="nav-item" title="Info">?</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+
+      <!-- AQI HERO -->
+      <div class="aqi-card card" id="aqiCard">
+        <div class="card-label">Air Quality Index</div>
+        <div class="aqi-number" id="aqiNum">—</div>
+        <div class="aqi-status" id="aqiStatus">Loading…</div>
+        <div class="aqi-insight" id="aqiInsight">Analysing current conditions</div>
+      </div>
+
+      <!-- WIND CONTROL -->
+      <div class="card">
+        <div class="card-label">Wind Speed</div>
+        <div class="control-label" id="windLabel">Coastal sea breeze — active</div>
+        <div class="btn-group">
+          <div class="btn" id="w0" onclick="setWind(0)">None</div>
+          <div class="btn" id="w1" onclick="setWind(1)">Low</div>
+          <div class="btn active" id="w2" onclick="setWind(2)">Med</div>
+          <div class="btn" id="w3" onclick="setWind(3)">Strong</div>
+        </div>
+      </div>
+
+      <!-- TRAFFIC CONTROL -->
+      <div class="card">
+        <div class="card-label">Traffic Intensity</div>
+        <div class="control-label" id="trafficLabel">Moderate vehicular flow</div>
+        <div class="btn-group">
+          <div class="btn active" id="t1" onclick="setTraffic(1)">Low</div>
+          <div class="btn" id="t2" onclick="setTraffic(2)">Med</div>
+          <div class="btn" id="t3" onclick="setTraffic(3)">Heavy</div>
+        </div>
+      </div>
+
+      <!-- TOGGLES -->
+      <div class="card">
+        <div class="card-label">Urban Factors</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+          <div class="toggle-row">
+            <div class="toggle-wrap">
+              <div class="toggle-name">Construction</div>
+              <div class="toggle-desc">Active sites — dust + PM10</div>
+            </div>
+            <div class="toggle" id="tgConstruct" onclick="toggleFactor('construct')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-wrap">
+              <div class="toggle-name">Waste Burning</div>
+              <div class="toggle-desc">Open burning — PM2.5 spike</div>
+            </div>
+            <div class="toggle" id="tgBurn" onclick="toggleFactor('burn')"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-wrap">
+              <div class="toggle-name">Winter Season</div>
+              <div class="toggle-desc">Temperature inversion</div>
+            </div>
+            <div class="toggle" id="tgWinter" onclick="toggleFactor('winter')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DATA SOURCES -->
+      <div class="card">
+        <div class="card-label">Data Sources</div>
+        <div class="source-tags">
+          <div class="tag">CPCB</div><div class="tag">SAFAR</div>
+          <div class="tag">AQI.in</div><div class="tag">IQAir</div>
+          <div class="tag">IMD</div><div class="tag">WHO</div>
+          <div class="tag">MPCB</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CENTER PANEL -->
+    <div class="center-panel">
+
+      <div class="header-bar">
+        <div>
+          <div class="header-title">Mumbai Air System</div>
+          <div class="header-sub">Greater Mumbai Metropolitan Region</div>
+        </div>
+        <div class="header-right">
+          <div class="live-dot"></div>
+          <div class="header-time" id="clock">—</div>
+        </div>
+      </div>
+
+      <div id="canvas-container">
+        <div class="map-label" id="label-city">Mumbai City</div>
+        <div class="map-label" id="label-sea">Arabian Sea →</div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- WIND DIRECTION -->
+      <div class="card">
+        <div class="card-label">Wind Direction</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:4px;">
+          <div class="wind-compass">
+            <div class="wind-arrow" id="windArrow"></div>
+            <div class="wind-compass-dot"></div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;" id="windDirLabel">W → E</div>
+            <div style="font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:2px;" id="windSpeedLabel">6.2 km/h</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PM2.5 -->
+      <div class="card">
+        <div class="card-label">PM2.5 Level</div>
+        <div class="stat-row">
+          <div class="stat-big" id="pm25Num">56</div>
+          <div class="stat-unit">µg/m³</div>
+          <div class="stat-change up" id="pm25Change">▲ 12%</div>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:4px;">WHO limit: 5 µg/m³ · India: 40 µg/m³</div>
+        <div class="mini-bar-wrap"><div class="mini-bar" id="pm25Bar" style="background:var(--warn);"></div></div>
+      </div>
+
+      <!-- PM10 -->
+      <div class="card">
+        <div class="card-label">PM10 Level</div>
+        <div class="stat-row">
+          <div class="stat-big" id="pm10Num">92</div>
+          <div class="stat-unit">µg/m³</div>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:4px;">Road dust: ~60% contributor</div>
+        <div class="mini-bar-wrap"><div class="mini-bar" id="pm10Bar" style="background:var(--accent);"></div></div>
+      </div>
+
+      <!-- TREND CARD -->
+      <div class="card">
+        <div class="card-label">AQI Trend — Mumbai 2020–2026</div>
+        <div class="spark-wrap">
+          <svg class="spark" id="sparkSvg" viewBox="0 0 200 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(246,173,85,0.4)"/>
+                <stop offset="100%" stop-color="rgba(246,173,85,0)"/>
+              </linearGradient>
+            </defs>
+            <path id="sparkArea" fill="url(#sparkGrad)" d=""/>
+            <path id="sparkLine" fill="none" stroke="#f6ad55" stroke-width="1.5" stroke-linecap="round" d=""/>
+            <circle id="sparkDot" r="3" fill="#f6ad55"/>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <div style="font-size:8px;font-family:'DM Mono',monospace;color:var(--text-muted);">2020: 91</div>
+          <div style="font-size:8px;font-family:'DM Mono',monospace;color:var(--danger);">2026: 172 ↑64%</div>
+        </div>
+      </div>
+
+      <!-- COASTAL PARADOX -->
+      <div class="card">
+        <div class="card-label">Coastal Paradox</div>
+        <div style="font-size:10px;color:var(--text-dim);font-family:'DM Mono',monospace;line-height:1.7;margin-top:4px;">
+          When sea breeze ↓ below 5 km/h, pollutants stop dispersing. The same city, same emissions — completely different AQI.
+        </div>
+        <div style="height:1px;background:var(--border);margin:10px 0;"></div>
+        <div style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;line-height:1.6;">
+          AQI range: <span style="color:var(--good);">50</span> (strong wind) → <span style="color:var(--danger);">300+</span> (stagnant)
+        </div>
+      </div>
+
+      <!-- YEAR COMPARISON -->
+      <div class="card">
+        <div class="card-label">2026 vs Historical</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:9px;">
+            <div style="width:28px;color:var(--text-muted);">2020</div>
+            <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:35%;background:var(--good);border-radius:2px;"></div>
+            </div>
+            <div style="color:var(--good);">91</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:9px;">
+            <div style="width:28px;color:var(--text-muted);">2023</div>
+            <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:43%;background:var(--warn);border-radius:2px;"></div>
+            </div>
+            <div style="color:var(--warn);">109</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:9px;">
+            <div style="width:28px;color:var(--text-muted);">2025</div>
+            <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:44%;background:var(--warn);border-radius:2px;"></div>
+            </div>
+            <div style="color:var(--warn);">111</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:9px;">
+            <div style="width:28px;color:var(--text-muted);">2026</div>
+            <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:68%;background:var(--danger);border-radius:2px;transition:width 1s;"></div>
+            </div>
+            <div style="color:var(--danger);">172</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ─────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────
+const state = {
+  wind: 2,       // 0=none, 1=low, 2=med, 3=strong
+  traffic: 1,    // 1=low, 2=med, 3=heavy
+  construct: false,
+  burn: false,
+  winter: false,
+  aqi: 120,
+  targetAqi: 120,
+  pm25: 56,
+  targetPm25: 56,
+  time: 0,
+};
+
+// ─────────────────────────────────────────────────
+// AQI CALCULATION
+// ─────────────────────────────────────────────────
+function calcAQI() {
+  let base = 60;
+  base += state.traffic * 45;
+  base -= state.wind * 38;
+  if (state.construct) base += 35;
+  if (state.burn)      base += 28;
+  if (state.winter)    base += 50;
+  return Math.round(Math.max(40, Math.min(350, base)));
+}
+function calcPM25() {
+  let base = 25;
+  base += state.traffic * 18;
+  base -= state.wind * 12;
+  if (state.construct) base += 20;
+  if (state.burn)      base += 22;
+  if (state.winter)    base += 30;
+  return Math.round(Math.max(10, Math.min(200, base)));
+}
+function calcPM10() { return Math.round(calcPM25() * 1.6); }
+
+// ─────────────────────────────────────────────────
+// AQI CATEGORIES
+// ─────────────────────────────────────────────────
+function aqiCategory(v) {
+  if (v <= 50)  return { label:'Good',           color:'#68d391', bg:'rgba(104,211,145,0.1)', border:'rgba(104,211,145,0.25)' };
+  if (v <= 100) return { label:'Satisfactory',   color:'#9ae6b4', bg:'rgba(154,230,180,0.08)', border:'rgba(154,230,180,0.2)' };
+  if (v <= 150) return { label:'Moderate',       color:'#f6ad55', bg:'rgba(246,173,85,0.1)',  border:'rgba(246,173,85,0.25)' };
+  if (v <= 200) return { label:'Poor',           color:'#fc8181', bg:'rgba(252,129,129,0.1)', border:'rgba(252,129,129,0.25)' };
+  if (v <= 300) return { label:'Very Poor',      color:'#e53e3e', bg:'rgba(229,62,62,0.12)',  border:'rgba(229,62,62,0.35)' };
+  return                { label:'Severe',        color:'#822727', bg:'rgba(130,39,39,0.18)',  border:'rgba(130,39,39,0.5)' };
+}
+
+function aqiInsight(v, w, t, construct, burn, winter) {
+  if (w === 0 && t >= 2) return 'No wind — pollutants are trapped over the city';
+  if (winter && w <= 1)  return 'Winter inversion — cold air trapping pollution near ground';
+  if (v > 250)           return 'Severe conditions — all factors contributing to toxic buildup';
+  if (v > 180)           return 'Heavy urban activity with poor dispersion — dangerous levels';
+  if (w >= 3)            return 'Strong sea breeze — actively dispersing pollutants westward';
+  if (construct && burn) return 'Construction dust + waste burning compounding AQI spike';
+  if (t === 3)           return 'Peak traffic emissions — PM2.5 and black carbon elevated';
+  if (v > 130)           return 'Low wind allowing gradual pollutant accumulation';
+  return 'Moderate air quality — sea breeze providing partial relief';
+}
+
+// ─────────────────────────────────────────────────
+// UI UPDATER
+// ─────────────────────────────────────────────────
+function updateUI() {
+  const aqi = state.aqi;
+  const cat = aqiCategory(aqi);
+
+  document.getElementById('aqiNum').textContent    = Math.round(aqi);
+  document.getElementById('aqiNum').style.color    = cat.color;
+  document.getElementById('aqiStatus').textContent = cat.label;
+  document.getElementById('aqiStatus').style.color = cat.color;
+
+  const card = document.getElementById('aqiCard');
+  card.style.background    = cat.bg;
+  card.style.borderColor   = cat.border;
+
+  document.getElementById('aqiInsight').textContent =
+    aqiInsight(aqi, state.wind, state.traffic, state.construct, state.burn, state.winter);
+
+  const pm25 = state.pm25;
+  document.getElementById('pm25Num').textContent = pm25;
+  document.getElementById('pm25Bar').style.width = Math.min(100, pm25 / 1.5) + '%';
+  document.getElementById('pm25Bar').style.background = pm25 > 60 ? 'var(--danger)' : pm25 > 35 ? 'var(--warn)' : 'var(--accent)';
+
+  const pm10 = calcPM10();
+  document.getElementById('pm10Num').textContent = pm10;
+  document.getElementById('pm10Bar').style.width = Math.min(100, pm10 / 2) + '%';
+  document.getElementById('pm10Bar').style.background = pm10 > 100 ? 'var(--warn)' : 'var(--accent)';
+
+  // Wind labels
+  const windLabels = ['Sea breeze — absent', 'Weak coastal drift', 'Moderate sea breeze', 'Strong Arabian Sea wind'];
+  const windKmh    = [0, 4.2, 8.6, 16.4];
+  const windDirs   = ['—', 'W → E  (weak)', 'W → E', 'WSW → ENE  (strong)'];
+  document.getElementById('windLabel').textContent    = windLabels[state.wind];
+  document.getElementById('windSpeedLabel').textContent = windKmh[state.wind] + ' km/h';
+  document.getElementById('windDirLabel').textContent = windDirs[state.wind];
+  document.getElementById('windArrow').style.transform = `rotate(${[0, -10, -20, -35][state.wind]}deg)`;
+
+  // Traffic label
+  const trafficLabels = ['', 'Off-peak — light flow', 'Commute hours — heavy', 'Peak gridlock — severe'];
+  document.getElementById('trafficLabel').textContent = trafficLabels[state.traffic];
+
+  // Blobs
+  document.getElementById('blob1').style.opacity = state.wind >= 2 ? '1' : '0.3';
+  document.getElementById('blob2').style.opacity = state.traffic >= 2 ? '1' : '0.3';
+  document.getElementById('blob3').style.opacity = aqi > 180 ? '1' : '0';
+}
+
+// ─────────────────────────────────────────────────
+// CONTROL FUNCTIONS
+// ─────────────────────────────────────────────────
+function setWind(v) {
+  state.wind = v;
+  ['w0','w1','w2','w3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'btn' + (i === v ? ' active' : '');
+  });
+  recalc();
+}
+
+function setTraffic(v) {
+  state.traffic = v;
+  ['t1','t2','t3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    const level = i + 1;
+    el.className = 'btn' + (level === v ? (v === 3 ? ' active-danger' : v === 2 ? ' active-warn' : ' active') : '');
+  });
+  recalc();
+}
+
+function toggleFactor(f) {
+  state[f] = !state[f];
+  const ids = { construct: 'tgConstruct', burn: 'tgBurn', winter: 'tgWinter' };
+  const el = document.getElementById(ids[f]);
+  if (state[f]) {
+    el.className = f === 'burn' ? 'toggle on-warn' : 'toggle on';
+  } else {
+    el.className = 'toggle';
+  }
+  recalc();
+}
+
+function recalc() {
+  state.targetAqi  = calcAQI();
+  state.targetPm25 = calcPM25();
+}
+
+// ─────────────────────────────────────────────────
+// SPARKLINE
+// ─────────────────────────────────────────────────
+function drawSparkline() {
+  const data = [91, 109, 114, 109, 100, 111, 172];
+  const W = 200, H = 40, pad = 4;
+  const mn = 80, mx = 180;
+  const pts = data.map((v, i) => ({
+    x: pad + (i / (data.length - 1)) * (W - pad * 2),
+    y: H - pad - ((v - mn) / (mx - mn)) * (H - pad * 2)
+  }));
+
+  const lineD  = 'M ' + pts.map(p => `${p.x},${p.y}`).join(' L ');
+  const areaD  = lineD + ` L ${pts[pts.length-1].x},${H} L ${pts[0].x},${H} Z`;
+
+  document.getElementById('sparkLine').setAttribute('d', lineD);
+  document.getElementById('sparkArea').setAttribute('d', areaD);
+  const last = pts[pts.length - 1];
+  document.getElementById('sparkDot').setAttribute('cx', last.x);
+  document.getElementById('sparkDot').setAttribute('cy', last.y);
+}
+
+// ─────────────────────────────────────────────────
+// CLOCK
+// ─────────────────────────────────────────────────
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+    + '  IST';
+}
+
+// ─────────────────────────────────────────────────
+// CANVAS / PARTICLE SYSTEM
+// ─────────────────────────────────────────────────
+const canvas = document.createElement('canvas');
+document.getElementById('canvas-container').prepend(canvas);
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  const c = document.getElementById('canvas-container');
+  canvas.width  = c.offsetWidth;
+  canvas.height = c.offsetHeight;
+}
+
+// Mumbai simplified outline path (abstract blob)
+function getMumbaiPath(cx, cy, scale) {
+  return new Path2D(
+    `M ${cx-60*scale},${cy-110*scale}
+     C ${cx-40*scale},${cy-140*scale} ${cx+20*scale},${cy-145*scale} ${cx+55*scale},${cy-100*scale}
+     C ${cx+90*scale},${cy-55*scale}  ${cx+80*scale},${cy+10*scale}  ${cx+40*scale},${cy+60*scale}
+     C ${cx+10*scale},${cy+110*scale} ${cx-30*scale},${cy+140*scale} ${cx-70*scale},${cy+80*scale}
+     C ${cx-110*scale},${cy+20*scale} ${cx-90*scale},${cy-80*scale}  ${cx-60*scale},${cy-110*scale} Z`
+  );
+}
+
+// Particles
+const particles = [];
+const MAX_PARTICLES = 500;
+
+class Particle {
+  constructor(forced) {
+    this.reset(forced);
+  }
+  reset(forced) {
+    const W = canvas.width, H = canvas.height;
+    if (forced || state.wind === 0) {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+    } else {
+      // spawn from right side (blown in from east or reset from left)
+      this.x = state.wind >= 2 ? -10 : Math.random() * W;
+      this.y = Math.random() * H;
+    }
+    this.size   = Math.random() * 2.5 + 0.5;
+    this.speed  = Math.random() * 0.6 + 0.2;
+    this.drift  = (Math.random() - 0.5) * 0.4;
+    this.alpha  = Math.random() * 0.6 + 0.2;
+    this.life   = 1;
+  }
+  update() {
+    const windPush = [0, 0.4, 0.9, 2.0][state.wind];
+    this.x += windPush * this.speed * 0.8;
+    this.y += this.drift;
+
+    // slight brownian
+    this.x += (Math.random() - 0.5) * (state.wind === 0 ? 0.4 : 0.1);
+    this.y += (Math.random() - 0.5) * 0.3;
+
+    if (this.x > canvas.width + 10 || this.x < -10) this.reset(false);
+    if (this.y > canvas.height + 10) this.y = -10;
+    if (this.y < -10) this.y = canvas.height + 10;
+  }
+  draw() {
+    const aqi = state.aqi;
+    let r, g, b;
+    if (aqi < 100)      { r=150; g=220; b=200; }
+    else if (aqi < 160) { r=200; g=190; b=140; }
+    else if (aqi < 220) { r=220; g=140; b=100; }
+    else                { r=220; g=100; b=100; }
+
+    // slower wind = more visible particles
+    const visMulti = 1 - state.wind * 0.15;
+    ctx.globalAlpha = this.alpha * visMulti * 0.8;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// Populate
+for (let i = 0; i < 280; i++) particles.push(new Particle(true));
+
+// Wind flow lines
+class FlowLine {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = -20;
+    this.y = Math.random() * canvas.height;
+    this.speed = Math.random() * 1.5 + 0.5;
+    this.length = Math.random() * 60 + 20;
+    this.alpha = Math.random() * 0.15 + 0.05;
+    this.active = false;
+  }
+  update() {
+    if (state.wind < 2) { this.alpha *= 0.95; return; }
+    this.x += this.speed * [0,0.5,1.2,2.5][state.wind];
+    if (this.x > canvas.width + this.length) this.reset();
+  }
+  draw() {
+    if (state.wind < 1) return;
+    ctx.globalAlpha = this.alpha * (state.wind / 3);
+    ctx.strokeStyle = '#4fd1c5';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x - this.length, this.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+const flowLines = [];
+for (let i = 0; i < 40; i++) {
+  const fl = new FlowLine();
+  fl.x = Math.random() * canvas.width; // spread initially
+  flowLines.push(fl);
+}
+
+// Dust plumes (construction)
+class DustPlume {
+  constructor() { this.reset(); }
+  reset() {
+    const cx = canvas.width * 0.5, cy = canvas.height * 0.5;
+    this.x = cx + (Math.random() - 0.5) * 200;
+    this.y = cy + (Math.random() - 0.5) * 150;
+    this.r = Math.random() * 30 + 10;
+    this.alpha = Math.random() * 0.3 + 0.1;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = -Math.random() * 0.3 - 0.1;
+    this.life = 1;
+    this.decay = Math.random() * 0.005 + 0.003;
+  }
+  update() { this.r += 0.3; this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
+  draw() {
+    if (!state.construct) return;
+    ctx.globalAlpha = this.life * this.alpha * 0.6;
+    const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+    g.addColorStop(0, 'rgba(200,170,120,0.4)');
+    g.addColorStop(1, 'rgba(200,170,120,0)');
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    if (this.life <= 0) this.reset();
+  }
+}
+
+const dustPlumes = [];
+for (let i = 0; i < 12; i++) dustPlumes.push(new DustPlume());
+
+// Smog overlay
+let smogAlpha = 0;
+
+function drawCanvas(timestamp) {
+  if (!canvas.width || !canvas.height) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const cx = canvas.width * 0.5;
+  const cy = canvas.height * 0.52;
+  const scale = Math.min(canvas.width, canvas.height) / 400;
+
+  // Background subtle city glow
+  const cityGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 200 * scale);
+  cityGlow.addColorStop(0, 'rgba(79,209,197,0.03)');
+  cityGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = cityGlow;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 200 * scale, 0, Math.PI*2);
+  ctx.fill();
+
+  // Mumbai silhouette
+  const mumbaiPath = getMumbaiPath(cx, cy, scale);
+  ctx.save();
+  ctx.clip(mumbaiPath);
+  const silFill = ctx.createLinearGradient(cx-100*scale, cy-100*scale, cx+100*scale, cy+100*scale);
+  silFill.addColorStop(0, 'rgba(79,209,197,0.06)');
+  silFill.addColorStop(1, 'rgba(79,209,197,0.02)');
+  ctx.fillStyle = silFill;
+  ctx.fill(mumbaiPath);
+  ctx.restore();
+
+  // City outline
+  ctx.strokeStyle = 'rgba(79,209,197,0.18)';
+  ctx.lineWidth = 1;
+  ctx.stroke(mumbaiPath);
+
+  // Grid dots (city structure)
+  ctx.fillStyle = 'rgba(79,209,197,0.12)';
+  for (let gx = cx - 120*scale; gx < cx + 130*scale; gx += 22*scale) {
+    for (let gy = cy - 150*scale; gy < cy + 160*scale; gy += 22*scale) {
+      ctx.beginPath();
+      ctx.arc(gx, gy, 1, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Flow lines (wind)
+  flowLines.forEach(fl => { fl.update(); fl.draw(); });
+
+  // Smog layer
+  const targetSmog = Math.max(0, (state.aqi - 80) / 300);
+  smogAlpha += (targetSmog - smogAlpha) * 0.02;
+  if (smogAlpha > 0.01) {
+    const aqi = state.aqi;
+    let sr = 60, sg = 50, sb = 50;
+    if (aqi > 200) { sr=80; sg=30; sb=30; }
+    const smogGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 300*scale);
+    smogGrad.addColorStop(0, `rgba(${sr},${sg},${sb},${smogAlpha * 0.6})`);
+    smogGrad.addColorStop(0.6, `rgba(${sr},${sg},${sb},${smogAlpha * 0.3})`);
+    smogGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = smogGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 300*scale, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Dust plumes
+  dustPlumes.forEach(d => { d.update(); d.draw(); });
+
+  // Particles
+  const targetCount = Math.round(
+    150 + state.traffic * 60
+    + (state.construct ? 60 : 0)
+    + (state.burn ? 40 : 0)
+    + (state.winter ? 50 : 0)
+    - state.wind * 40
+  );
+  while (particles.length < Math.min(MAX_PARTICLES, targetCount)) particles.push(new Particle(true));
+  while (particles.length > targetCount + 20) particles.pop();
+  particles.forEach(p => { p.update(); p.draw(); });
+
+  // Burn haze
+  if (state.burn) {
+    const hz = ctx.createRadialGradient(cx+60*scale, cy+40*scale, 0, cx+60*scale, cy+40*scale, 120*scale);
+    hz.addColorStop(0, 'rgba(180,80,20,0.15)');
+    hz.addColorStop(1, 'transparent');
+    ctx.fillStyle = hz; ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  // Winter inversion layer
+  if (state.winter) {
+    const inv = ctx.createLinearGradient(0, canvas.height*0.3, 0, canvas.height*0.6);
+    inv.addColorStop(0, 'transparent');
+    inv.addColorStop(0.5, 'rgba(100,110,140,0.12)');
+    inv.addColorStop(1, 'transparent');
+    ctx.fillStyle = inv; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle = 'rgba(100,110,180,0.15)';
+    ctx.setLineDash([4,8]);
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height*0.45);
+    ctx.lineTo(canvas.width, canvas.height*0.45);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // AQI label in canvas
+  const cat = aqiCategory(state.aqi);
+  ctx.font = `800 ${Math.round(11*scale+10)}px Syne, sans-serif`;
+  ctx.fillStyle = cat.color;
+  ctx.globalAlpha = 0.6;
+  ctx.textAlign = 'center';
+  ctx.fillText('AQI  ' + Math.round(state.aqi), cx, cy + 200*scale);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+
+  // Sea arrow (right side)
+  if (state.wind >= 2) {
+    const arrX = canvas.width * 0.12;
+    const arrY = canvas.height * 0.5;
+    ctx.strokeStyle = `rgba(79,209,197,${state.wind * 0.12})`;
+    ctx.lineWidth = 1.5;
+    for (let i = -2; i <= 2; i++) {
+      const ay = arrY + i * 30;
+      ctx.beginPath();
+      ctx.moveTo(arrX, ay);
+      ctx.lineTo(arrX + 40, ay);
+      ctx.moveTo(arrX + 32, ay - 6);
+      ctx.lineTo(arrX + 40, ay);
+      ctx.lineTo(arrX + 32, ay + 6);
+      ctx.stroke();
+    }
+    ctx.font = '500 9px DM Mono, monospace';
+    ctx.fillStyle = `rgba(79,209,197,${state.wind * 0.4})`;
+    ctx.fillText('sea breeze', arrX - 2, arrY + 55);
+  }
+}
+
+// ─────────────────────────────────────────────────
+// MAIN LOOP
+// ─────────────────────────────────────────────────
+let last = 0;
+function loop(ts) {
+  // Smooth AQI
+  state.aqi  += (state.targetAqi  - state.aqi)  * 0.04;
+  state.pm25 += (state.targetPm25 - state.pm25) * 0.04;
+
+  state.time = ts;
+  drawCanvas(ts);
+
+  if (ts - last > 200) {
+    updateUI();
+    updateClock();
+    last = ts;
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// ─────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────
+window.addEventListener('resize', () => { resizeCanvas(); });
+resizeCanvas();
+drawSparkline();
+recalc();
+state.aqi = state.targetAqi;
+state.pm25 = state.targetPm25;
+updateUI();
+updateClock();
+setInterval(updateClock, 1000);
+
+// Show after loader
+setTimeout(() => {
+  document.getElementById('loader').style.opacity = '0';
+  setTimeout(() => document.getElementById('loader').remove(), 900);
+  document.querySelectorAll('.blob').forEach(b => b.style.opacity = '1');
+  requestAnimationFrame(loop);
+}, 1600);
+</script>
+</body>
+</html>
