@@ -34,7 +34,7 @@ html, body {
 .blob { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; opacity:0; transition:opacity 2s ease; }
 .blob-1 { width:500px;height:500px;top:-100px;left:-100px; background:radial-gradient(circle,rgba(79,209,197,0.08),transparent 70%); }
 .blob-2 { width:600px;height:600px;bottom:-150px;right:-100px; background:radial-gradient(circle,rgba(246,173,85,0.06),transparent 70%); }
-.blob-3 { width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%); background:radial-gradient(circle,rgba(252,129,129,0.05),transparent 70%); }
+
 #loader {
   position:absolute;inset:0;z-index:100; background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
@@ -229,7 +229,7 @@ svg.spark { width:100%;height:100%;overflow:visible; }
 
 <div class="blob blob-1" id="blob1"></div>
 <div class="blob blob-2" id="blob2"></div>
-<div class="blob blob-3" id="blob3"></div>
+
 
 <div class="shell">
 
@@ -357,7 +357,7 @@ svg.spark { width:100%;height:100%;overflow:visible; }
           <div class="mini-bar-wrap"><div class="mini-bar" id="pm10Bar" style="background:var(--accent);width:35%;"></div></div>
         </div>
         <div class="card">
-          <div class="card-label">AQI Trend — 2020–2026</div>
+          <div class="card-label">AQI Trend — 2020–2025</div>
           <div class="spark-wrap">
             <svg class="spark" id="sparkSvg" viewBox="0 0 200 40" preserveAspectRatio="none">
               <defs><linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(246,173,85,0.4)"/><stop offset="100%" stop-color="rgba(246,173,85,0)"/></linearGradient></defs>
@@ -368,7 +368,7 @@ svg.spark { width:100%;height:100%;overflow:visible; }
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:4px;">
             <div style="font-size:8px;font-family:'DM Mono',monospace;color:var(--text-muted);">2020: 91</div>
-            <div style="font-size:8px;font-family:'DM Mono',monospace;color:var(--danger);">2026: 172 ↑64%</div>
+            <div style="font-size:8px;font-family:'DM Mono',monospace;color:var(--danger);">Historical annual AQI averages</div>
           </div>
         </div>
         <div class="card">
@@ -410,7 +410,7 @@ svg.spark { width:100%;height:100%;overflow:visible; }
       </div>
       <div class="card">
         <div class="card-label">SAFAR — Air Quality Expert</div>
-        <div class="fv-quote">"Sea breeze can reduce AQI from 300 to below 100 within hours when fully activated. In cleaner pockets, readings drop to 30–50 when wind is constant."</div>
+        <div class="fv-quote">"Strong coastal winds significantly improve pollutant dispersion and are associated with noticeable AQI improvement across Mumbai."</div>
         <div class="fv-quote-attr">— SAFAR, 2025</div>
       </div>
       <div class="card">
@@ -420,7 +420,7 @@ svg.spark { width:100%;height:100%;overflow:visible; }
       </div>
       <div class="card fv-card-half">
         <div class="card-label">Why 2025–2026 Was Worse</div>
-        <div class="fv-text">Westerly wind disturbances caused easterly winds to slow significantly during winter. This triggered the first-ever GRAP Stage 4 in Mumbai (Nov 28, 2025). Areas like Mazgaon, Malad, Andheri East and Borivali East saw AQI exceed 300 for multiple consecutive days with no nighttime recovery — a pattern not seen since SAFAR began tracking 6 years ago.</div>
+        <div class="fv-text">Westerly wind disturbances caused easterly winds to slow significantly during winter. Reduced atmospheric mixing and stagnant wind conditions contributed to unusually severe pollution episodes across multiple monitoring stations in the city.</div>
       </div>
     </div>
   </div>
@@ -481,8 +481,8 @@ svg.spark { width:100%;height:100%;overflow:visible; }
       <div class="card fv-card-wide">
         <div class="card-label">Research Questions — Answered</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;">
-          <div class="fv-qa"><div class="fv-q">Why more frequent poor AQI despite coastal location?</div><div class="fv-a">Post-COVID construction boom + growing vehicle fleet + weakening winter winds. 2026 AQI is 64.2% worse than the 2020–2025 average.</div></div>
-          <div class="fv-qa"><div class="fv-q">How does wind affect AQI?</div><div class="fv-a">Wind is the primary dispersal mechanism. The same emissions produce AQI 80 with strong wind or 300+ with no wind. Sea breeze can clear smog within hours.</div></div>
+          <div class="fv-qa"><div class="fv-q">Why more frequent poor AQI despite coastal location?</div><div class="fv-a">Post-COVID construction boom + growing vehicle fleet + weakening winter winds. Increasing traffic density and weakening winter wind conditions have contributed to more frequent poor AQI episodes across Mumbai.</div></div>
+          <div class="fv-qa"><div class="fv-q">How does wind affect AQI?</div><div class="fv-a">Wind speed and atmospheric mixing strongly influence AQI in Mumbai. Strong coastal winds improve pollutant dispersion, while stagnant conditions allow particulate matter to accumulate rapidly.</div></div>
           <div class="fv-qa"><div class="fv-q">Why does a coastal city still suffer?</div><div class="fv-a">Temperature inversions + seasonal weakening of sea breeze + urban density blocking airflow in eastern suburbs all compound the problem in winter.</div></div>
         </div>
       </div>
@@ -496,7 +496,27 @@ svg.spark { width:100%;height:100%;overflow:visible; }
         <div class="card-label">Description</div>
         <div class="fv-text" style="font-size:12px;line-height:1.9;">"Why Mumbai Can't Breathe" is an interactive data visualization investigating the environmental and urban systems behind Mumbai's worsening air quality. Rather than presenting AQI as a static number, the project transforms it into a live, reactive experience — allowing users to manipulate wind, traffic, construction, and seasonal factors and observe in real time how each variable drives pollution across the city.</div>
       </div>
-      <div class="card"><div class="card-label">Target Audience</div><div class="fv-text">Urban individuals aged 18–25 in Mumbai who regularly encounter AQI data but lack deeper understanding of what causes it to change. Students, young professionals, and daily commuters.</div></div>
+      
+<div class="card fv-card-wide">
+<div class="card-label">Methodology</div>
+<div class="fv-text" style="font-size:11px;line-height:1.9;">
+This visualization combines CPCB AQI datasets, SAFAR meteorological observations,
+IMD wind patterns, WHO PM2.5 guidelines, and secondary research on pollution source attribution in Mumbai.
+
+<br><br>
+
+The interface is not intended as a scientific forecasting system.
+
+It is a systems-based interpretive model designed to communicate relationships between urban activity,
+atmospheric conditions, and pollution dispersion.
+
+<br><br>
+
+Interactive AQI changes are representational and designed to help users understand how environmental and urban factors interact dynamically.
+</div>
+</div>
+
+<div class="card"><div class="card-label">Target Audience</div><div class="fv-text">Urban individuals aged 18–25 in Mumbai who regularly encounter AQI data but lack deeper understanding of what causes it to change. Students, young professionals, and daily commuters.</div></div>
       <div class="card"><div class="card-label">Core Insight</div><div class="fv-text">AQI is not just about how much pollution is generated — it is determined equally by how effectively the city disperses it. Wind, urban density, and seasonal patterns are as important as emission sources.</div></div>
       <div class="card">
         <div class="card-label">How to Use the Dashboard</div>
@@ -635,7 +655,7 @@ function updateUI() {
 
   document.getElementById('blob1').style.opacity = state.wind>=2 ? '1':'0.3';
   document.getElementById('blob2').style.opacity = state.traffic>=2 ? '1':'0.3';
-  document.getElementById('blob3').style.opacity = aqi>180 ? '1':'0';
+  
 }
 
 // ── CONTROLS ───────────────────────────────────────
@@ -663,7 +683,7 @@ function recalc() { state.targetAqi=calcAQI(); state.targetPm25=calcPM25(); }
 
 // ── SPARKLINE ──────────────────────────────────────
 function drawSparkline() {
-  const data=[91,109,114,109,100,111,172]; const W=200,H=40,pad=4,mn=80,mx=180;
+  const data=[91,109,114,109,100,111]; const W=200,H=40,pad=4,mn=80,mx=130;
   const pts=data.map((v,i)=>({x:pad+(i/(data.length-1))*(W-pad*2),y:H-pad-((v-mn)/(mx-mn))*(H-pad*2)}));
   const ld='M '+pts.map(p=>`${p.x},${p.y}`).join(' L ');
   document.getElementById('sparkLine').setAttribute('d',ld);
@@ -747,40 +767,16 @@ class DustPlume {
 const dustPlumes=[];
 for(let i=0;i<12;i++)dustPlumes.push(new DustPlume());
 
-let smogAlpha=0;
 function drawCanvas() {
   if(!canvas.width||!canvas.height)return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const cx=canvas.width*.5,cy=canvas.height*.52,scale=Math.min(canvas.width,canvas.height)/400;
 
-  const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,200*scale);
-  cg.addColorStop(0,'rgba(79,209,197,0.03)'); cg.addColorStop(1,'transparent');
-  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(cx,cy,200*scale,0,Math.PI*2); ctx.fill();
 
-  const mpath=getMumbaiPath(cx,cy,scale);
-  ctx.save(); ctx.clip(mpath);
-  const sf=ctx.createLinearGradient(cx-100*scale,cy-100*scale,cx+100*scale,cy+100*scale);
-  sf.addColorStop(0,'rgba(79,209,197,0.06)'); sf.addColorStop(1,'rgba(79,209,197,0.02)');
-  ctx.fillStyle=sf; ctx.fill(mpath); ctx.restore();
-  ctx.strokeStyle='rgba(79,209,197,0.18)'; ctx.lineWidth=1; ctx.stroke(mpath);
-
-  ctx.fillStyle='rgba(79,209,197,0.12)';
-  for(let gx=cx-120*scale;gx<cx+130*scale;gx+=22*scale)
-    for(let gy=cy-150*scale;gy<cy+160*scale;gy+=22*scale){ctx.beginPath();ctx.arc(gx,gy,1,0,Math.PI*2);ctx.fill();}
 
   flowLines.forEach(fl=>{fl.update();fl.draw();});
 
-  const ts=Math.max(0,(state.aqi-80)/300);
-  smogAlpha+=(ts-smogAlpha)*0.02;
-  if(smogAlpha>.01){
-    const aqi=state.aqi; let sr=60,sg=50,sb=50;
-    if(aqi>200){sr=80;sg=30;sb=30;}
-    const sg2=ctx.createRadialGradient(cx,cy,0,cx,cy,300*scale);
-    sg2.addColorStop(0,`rgba(${sr},${sg},${sb},${smogAlpha*.6})`);
-    sg2.addColorStop(.6,`rgba(${sr},${sg},${sb},${smogAlpha*.3})`);
-    sg2.addColorStop(1,'transparent');
-    ctx.fillStyle=sg2; ctx.beginPath(); ctx.arc(cx,cy,300*scale,0,Math.PI*2); ctx.fill();
-  }
+
 
   dustPlumes.forEach(d=>{d.update();d.draw();});
 
